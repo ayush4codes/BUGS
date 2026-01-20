@@ -1,110 +1,248 @@
-'use client'
 
-import { useState } from 'react'
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Calculator, Zap, Clock, DollarSign, CheckCircle } from 'lucide-react';
+
+const projectTypes = [
+  { id: 'web', label: 'Web Application', icon: '🌐', baseCost: 15000 },
+  { id: 'mobile', label: 'Mobile App', icon: '📱', baseCost: 20000 },
+  { id: 'ai', label: 'AI/ML Solution', icon: '🤖', baseCost: 25000 },
+  { id: 'blockchain', label: 'Web3/Blockchain', icon: '⛓️', baseCost: 30000 },
+  { id: 'api', label: 'API Development', icon: '🔌', baseCost: 10000 },
+  { id: 'devops', label: 'DevOps/Cloud', icon: '☁️', baseCost: 12000 },
+];
+
+const complexityLevels = [
+  { id: 'simple', label: 'Simple', multiplier: 1, description: 'Basic features, minimal complexity' },
+  { id: 'moderate', label: 'Moderate', multiplier: 2, description: 'Standard features with some integrations' },
+  { id: 'complex', label: 'Complex', multiplier: 3.5, description: 'Advanced features, multiple integrations' },
+  { id: 'enterprise', label: 'Enterprise', multiplier: 5, description: 'Full enterprise-grade solution' },
+];
+
+const timelines = [
+  { id: 'urgent', label: 'Urgent', multiplier: 1.5, description: '2-4 weeks', icon: '🚀' },
+  { id: 'standard', label: 'Standard', multiplier: 1, description: '1-3 months', icon: '📅' },
+  { id: 'flexible', label: 'Flexible', multiplier: 0.8, description: '3-6 months', icon: '🗓️' },
+];
 
 export default function ProjectEstimator() {
-  const [features, setFeatures] = useState({
-    responsive: false,
-    api: false,
-    database: false,
-    auth: false,
-    admin: false,
-    payments: false,
-  })
-  const [complexity, setComplexity] = useState('medium')
+  const [projectType, setProjectType] = useState('');
+  const [complexity, setComplexity] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [features, setFeatures] = useState<string[]>([]);
 
-  const basePrice = 5000
-  const complexityMultipliers = {
-    low: 1,
-    medium: 1.5,
-    high: 2.5,
-  }
+  const allFeatures = [
+    'User Authentication',
+    'Payment Integration',
+    'Admin Dashboard',
+    'Real-time Updates',
+    'Analytics Dashboard',
+    'Multi-language Support',
+    'Push Notifications',
+    'Third-party Integrations',
+    'Custom Database Design',
+    'Performance Optimization',
+  ];
 
-  const featurePrices = {
-    responsive: 500,
-    api: 1500,
-    database: 1000,
-    auth: 800,
-    admin: 2000,
-    payments: 1500,
-  }
-
-  const totalPrice =
-    basePrice +
-    Object.entries(features)
-      .filter(([, enabled]) => enabled)
-      .reduce((sum, [feature]) => sum + featurePrices[feature as keyof typeof featurePrices], 0) *
-      complexityMultipliers[complexity as keyof typeof complexityMultipliers]
+  const baseCost = projectType 
+    ? projectTypes.find(t => t.id === projectType)?.baseCost || 0 
+    : 0;
+  
+  const complexityMultiplier = complexity 
+    ? complexityLevels.find(c => c.id === complexity)?.multiplier || 1 
+    : 1;
+  
+  const timelineMultiplier = timeline 
+    ? timelines.find(t => t.id === timeline)?.multiplier || 1 
+    : 1;
+  
+  const featuresCost = features.length * 2000;
+  
+  const totalCost = Math.round((baseCost * complexityMultiplier + featuresCost) * timelineMultiplier);
+  
+  const estimatedWeeks = () => {
+    if (!projectType || !complexity) return 0;
+    const baseWeeks = projectType === 'web' ? 8 : projectType === 'mobile' ? 12 : projectType === 'ai' ? 10 : 6;
+    const complexityMultiplier = complexity === 'simple' ? 0.7 : complexity === 'moderate' ? 1 : complexity === 'complex' ? 1.5 : 2;
+    return Math.round(baseWeeks * complexityMultiplier);
+  };
 
   return (
-    <section className="py-20 bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
-          Project Estimator
-        </h2>
-        <p className="text-gray-400 text-center mb-12">
-          Get a rough estimate of your project cost
-        </p>
+    <section className="relative py-24 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 mesh-bg" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-radial from-cyan-500/5 to-transparent" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white">Features</h3>
-            {Object.entries(features).map(([feature, enabled]) => (
-              <label
-                key={feature}
-                className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={enabled}
-                  onChange={() =>
-                    setFeatures((prev) => ({ ...prev, [feature]: !prev[feature as keyof typeof prev] }))
-                  }
-                  className="w-5 h-5 rounded border-gray-600 text-purple-500 focus:ring-purple-500"
-                />
-                <span className="text-gray-300 capitalize">
-                  {feature} (+${featurePrices[feature as keyof typeof featurePrices].toLocaleString()})
-                </span>
-              </label>
-            ))}
+      <div className="relative max-w-4xl mx-auto px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 mb-6">
+            <Calculator className="w-4 h-4 text-cyan-400" />
+            <span className="text-sm text-gray-300">Free Estimation Tool</span>
           </div>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="text-white">Project</span>{' '}
+            <span className="gradient-text">Estimator</span>
+          </h2>
+          <p className="text-xl text-gray-400">
+            Get a rough estimate for your project based on typical requirements
+          </p>
+        </motion.div>
 
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white">Complexity</h3>
-            <div className="space-y-3">
-              {(['low', 'medium', 'high'] as const).map((level) => (
+        {/* Calculator */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bento-card"
+        >
+          {/* Project Type */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4">What type of project do you need?</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {projectTypes.map((type) => (
                 <button
-                  key={level}
-                  onClick={() => setComplexity(level)}
-                  className={`w-full p-4 rounded-lg border transition-colors ${
-                    complexity === level
-                      ? 'border-purple-500 bg-purple-500/10 text-white'
-                      : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                  key={type.id}
+                  onClick={() => setProjectType(type.id)}
+                  className={`p-4 rounded-xl border transition-all cursor-hover ${
+                    projectType === type.id
+                      ? 'bg-white/10 border-cyan-500/50'
+                      : 'bg-white/5 border-white/10 hover:border-white/20'
                   }`}
                 >
-                  <span className="capitalize font-medium">{level}</span>
-                  <span className="float-right text-sm">
-                    {level === 'low' && '1x'}
-                    {level === 'medium' && '1.5x'}
-                    {level === 'high' && '2.5x'}
-                  </span>
+                  <span className="text-2xl mb-2 block">{type.icon}</span>
+                  <span className="text-sm text-white">{type.label}</span>
                 </button>
               ))}
             </div>
-
-            <div className="mt-8 p-6 bg-gray-800 rounded-xl">
-              <h3 className="text-lg font-semibold text-white mb-2">Estimated Cost</h3>
-              <p className="text-4xl font-bold text-purple-400">
-                ${totalPrice.toLocaleString()}
-              </p>
-              <p className="text-gray-400 text-sm mt-2">
-                This is an estimate. Final pricing may vary based on specific requirements.
-              </p>
-            </div>
           </div>
-        </div>
+
+          {/* Complexity */}
+          {projectType && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-8"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4">Project Complexity</h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {complexityLevels.map((level) => (
+                  <button
+                    key={level.id}
+                    onClick={() => setComplexity(level.id)}
+                    className={`p-4 rounded-xl border transition-all cursor-hover text-left ${
+                      complexity === level.id
+                        ? 'bg-white/10 border-purple-500/50'
+                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-sm font-medium text-white block mb-1">{level.label}</span>
+                    <span className="text-xs text-gray-500">{level.description}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Timeline */}
+          {complexity && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-8"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4">Preferred Timeline</h3>
+              <div className="grid sm:grid-cols-3 gap-3">
+                {timelines.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTimeline(t.id)}
+                    className={`p-4 rounded-xl border transition-all cursor-hover text-left ${
+                      timeline === t.id
+                        ? 'bg-white/10 border-green-500/50'
+                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="text-xl mb-2 block">{t.icon}</span>
+                    <span className="text-sm font-medium text-white block">{t.label}</span>
+                    <span className="text-xs text-gray-500">{t.description}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Additional Features */}
+          {timeline && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-8"
+            >
+              <h3 className="text-lg font-semibold text-white mb-4">Additional Features</h3>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {allFeatures.map((feature) => (
+                  <button
+                    key={feature}
+                    onClick={() => {
+                      if (features.includes(feature)) {
+                        setFeatures(features.filter(f => f !== feature));
+                      } else {
+                        setFeatures([...features, feature]);
+                      }
+                    }}
+                    className={`p-3 rounded-xl border transition-all cursor-hover text-left flex items-center gap-3 ${
+                      features.includes(feature)
+                        ? 'bg-white/10 border-cyan-500/50'
+                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                      features.includes(feature) ? 'bg-cyan-500 border-cyan-500' : 'border-gray-500'
+                    }`}>
+                      {features.includes(feature) && (
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      )}
+                    </div>
+                    <span className="text-sm text-white">{feature}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Estimate Result */}
+          {projectType && complexity && timeline && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-8 p-6 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-white/10"
+            >
+              <div className="text-center">
+                <p className="text-gray-400 mb-2">Estimated Project Cost</p>
+                <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
+                  ${totalCost.toLocaleString()}
+                </div>
+                <p className="text-sm text-gray-500 mb-4">Estimated timeline: {estimatedWeeks()} weeks</p>
+                <button className="btn-glow cursor-hover">
+                  Get Detailed Quote
+                </button>
+                <p className="text-xs text-gray-500 mt-4">
+                  *This is a rough estimate. Final cost may vary based on detailed requirements.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
