@@ -137,7 +137,7 @@ export default function Navigation() {
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold gradient-text">CACHEBUGS</span>
-              <span className="text-xs text-gray-500 -mt-1">By Founders</span>
+              <span className="text-xs text-gray-500 -mt-1">By CACHEBUGIANS </span>
             </div>
           </Link>
 
