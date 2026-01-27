@@ -1,30 +1,48 @@
+// Make sure to run npm install @formspree/react
+// For more help visit https://formspr.ee/react-help
 import React from 'react';
+import { useForm, ValidationError } from '@formspree/react';
 
-const StartProjectForm = () => {
+function ContactForm() {
+  const [state, handleSubmit] = useForm("mqepqlrg");
+  if (state.succeeded) {
+      return <p>Thanks for joining!</p>;
+  }
   return (
-    <form
-      action="https://formspree.io/f/mqepqlrg"
-      method="POST"
-    >
-      <label>
-        What kind of project do you want?
-        <input type="text" name="projectType" required />
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="email">
+        Email Address
       </label>
-      <label>
-        Your email:
-        <input type="email" name="email" required />
-      </label>
-      <label>
-        Your name:
-        <input type="text" name="name" required />
-      </label>
-      <label>
-        Description:
-        <textarea name="description" required></textarea>
-      </label>
-      <button type="submit">Send</button>
+      <input
+        id="email"
+        type="email" 
+        name="email"
+      />
+      <ValidationError 
+        prefix="Email" 
+        field="email"
+        errors={state.errors}
+      />
+      <textarea
+        id="message"
+        name="message"
+      />
+      <ValidationError 
+        prefix="Message" 
+        field="message"
+        errors={state.errors}
+      />
+      <button type="submit" disabled={state.submitting}>
+        Submit
+      </button>
     </form>
   );
-};
+}
 
-export default StartProjectForm;
+function App() {
+  return (
+    <ContactForm />
+  );
+}
+
+export default App;
