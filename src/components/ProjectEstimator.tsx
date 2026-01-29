@@ -29,7 +29,7 @@ const timelines = [
 
 export default function ProjectEstimator() {
   // --- Formspree Integration with your ID ---
-  const [state, handleSubmit] = useForm("xrekpayq"); 
+  const [state, handleSubmit] = useForm("https://formspree.io/f/xrekpayq"); 
 
   const [projectType, setProjectType] = useState('');
   const [complexity, setComplexity] = useState('');
