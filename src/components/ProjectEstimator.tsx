@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, Zap, Clock, DollarSign, CheckCircle } from 'lucide-react';
+import { useForm } from '@formspree/react';
+import { Calculator, CheckCircle } from 'lucide-react';
 
 const projectTypes = [
   { id: 'web', label: 'Web Application', icon: '🌐', baseCost: 15000 },
@@ -28,61 +28,88 @@ const timelines = [
 ];
 
 export default function ProjectEstimator() {
+  // --- Formspree Integration with your ID ---
+  const [state, handleSubmit] = useForm("xrekpayq"); 
+
   const [projectType, setProjectType] = useState('');
   const [complexity, setComplexity] = useState('');
   const [timeline, setTimeline] = useState('');
   const [features, setFeatures] = useState<string[]>([]);
+  const [email, setEmail] = useState('');
 
   const allFeatures = [
-    'User Authentication',
-    'Payment Integration',
-    'Admin Dashboard',
-    'Real-time Updates',
-    'Analytics Dashboard',
-    'Multi-language Support',
-    'Push Notifications',
-    'Third-party Integrations',
-    'Custom Database Design',
+    'User Authentication', 'Payment Integration', 'Admin Dashboard',
+    'Real-time Updates', 'Analytics Dashboard', 'Multi-language Support',
+    'Push Notifications', 'Third-party Integrations', 'Custom Database Design',
     'Performance Optimization',
   ];
 
-  const baseCost = projectType 
-    ? projectTypes.find(t => t.id === projectType)?.baseCost || 0 
-    : 0;
-  
-  const complexityMultiplier = complexity 
-    ? complexityLevels.find(c => c.id === complexity)?.multiplier || 1 
-    : 1;
-  
-  const timelineMultiplier = timeline 
-    ? timelines.find(t => t.id === timeline)?.multiplier || 1 
-    : 1;
-  
+  // --- Calculations ---
+  const baseCost = projectType ? projectTypes.find(t => t.id === projectType)?.baseCost || 0 : 0;
+  const complexityMultiplier = complexity ? complexityLevels.find(c => c.id === complexity)?.multiplier || 1 : 1;
+  const timelineMultiplier = timeline ? timelines.find(t => t.id === timeline)?.multiplier || 1 : 1;
   const featuresCost = features.length * 2000;
-  
   const totalCost = Math.round((baseCost * complexityMultiplier + featuresCost) * timelineMultiplier);
-  
+
   const estimatedWeeks = () => {
     if (!projectType || !complexity) return 0;
     const baseWeeks = projectType === 'web' ? 8 : projectType === 'mobile' ? 12 : projectType === 'ai' ? 10 : 6;
-    const complexityMultiplier = complexity === 'simple' ? 0.7 : complexity === 'moderate' ? 1 : complexity === 'complex' ? 1.5 : 2;
-    return Math.round(baseWeeks * complexityMultiplier);
+    const compMult = complexity === 'simple' ? 0.7 : complexity === 'moderate' ? 1 : complexity === 'complex' ? 1.5 : 2;
+    return Math.round(baseWeeks * compMult);
   };
+
+  // --- Custom Submission Handler ---
+  const handleFormSubmission = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // We send the email plus the calculated data as hidden fields
+    handleSubmit({
+      email: email,
+      projectType: projectTypes.find(t => t.id === projectType)?.label,
+      complexity: complexityLevels.find(c => c.id === complexity)?.label,
+      timeline: timelines.find(t => t.id === timeline)?.label,
+      selectedFeatures: features.join(', '),
+      estimatedCost: `$${totalCost.toLocaleString()}`,
+      estimatedDuration: `${estimatedWeeks()} weeks`
+    });
+  };
+
+  // --- Success State ---
+  if (state.succeeded) {
+    return (
+      <section className="relative py-24 overflow-hidden min-h-[600px] flex items-center justify-center">
+        <div className="absolute inset-0 mesh-bg" />
+        <div className="relative z-10 text-center px-4">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }}
+            className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/20 mb-6 border border-green-500/50"
+          >
+            <CheckCircle className="w-10 h-10 text-green-500" />
+          </motion.div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Quote Request Sent!</h2>
+          <p className="text-xl text-gray-400 max-w-lg mx-auto mb-8">
+            Thanks for submitting your estimate. Check your email inbox for a confirmation shortly.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all"
+          >
+            Start New Estimate
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative py-24 overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 mesh-bg" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-radial from-cyan-500/5 to-transparent" />
 
       <div className="relative max-w-4xl mx-auto px-6">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10 mb-6">
             <Calculator className="w-4 h-4 text-cyan-400" />
             <span className="text-sm text-gray-300">Free Estimation Tool</span>
@@ -97,12 +124,8 @@ export default function ProjectEstimator() {
         </motion.div>
 
         {/* Calculator */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bento-card"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bento-card">
+          
           {/* Project Type */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">What type of project do you need?</h3>
@@ -112,9 +135,7 @@ export default function ProjectEstimator() {
                   key={type.id}
                   onClick={() => setProjectType(type.id)}
                   className={`p-4 rounded-xl border transition-all cursor-hover ${
-                    projectType === type.id
-                      ? 'bg-white/10 border-cyan-500/50'
-                      : 'bg-white/5 border-white/10 hover:border-white/20'
+                    projectType === type.id ? 'bg-white/10 border-cyan-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'
                   }`}
                 >
                   <span className="text-2xl mb-2 block">{type.icon}</span>
@@ -126,11 +147,7 @@ export default function ProjectEstimator() {
 
           {/* Complexity */}
           {projectType && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-8"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-8">
               <h3 className="text-lg font-semibold text-white mb-4">Project Complexity</h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {complexityLevels.map((level) => (
@@ -138,9 +155,7 @@ export default function ProjectEstimator() {
                     key={level.id}
                     onClick={() => setComplexity(level.id)}
                     className={`p-4 rounded-xl border transition-all cursor-hover text-left ${
-                      complexity === level.id
-                        ? 'bg-white/10 border-purple-500/50'
-                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                      complexity === level.id ? 'bg-white/10 border-purple-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'
                     }`}
                   >
                     <span className="text-sm font-medium text-white block mb-1">{level.label}</span>
@@ -153,11 +168,7 @@ export default function ProjectEstimator() {
 
           {/* Timeline */}
           {complexity && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-8"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-8">
               <h3 className="text-lg font-semibold text-white mb-4">Preferred Timeline</h3>
               <div className="grid sm:grid-cols-3 gap-3">
                 {timelines.map((t) => (
@@ -165,14 +176,11 @@ export default function ProjectEstimator() {
                     key={t.id}
                     onClick={() => setTimeline(t.id)}
                     className={`p-4 rounded-xl border transition-all cursor-hover text-left ${
-                      timeline === t.id
-                        ? 'bg-white/10 border-green-500/50'
-                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                      timeline === t.id ? 'bg-white/10 border-green-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'
                     }`}
                   >
                     <span className="text-xl mb-2 block">{t.icon}</span>
                     <span className="text-sm font-medium text-white block">{t.label}</span>
-                    <span className="text-xs text-gray-500">{t.description}</span>
                   </button>
                 ))}
               </div>
@@ -181,35 +189,21 @@ export default function ProjectEstimator() {
 
           {/* Additional Features */}
           {timeline && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mb-8"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-8">
               <h3 className="text-lg font-semibold text-white mb-4">Additional Features</h3>
               <div className="grid sm:grid-cols-2 gap-3">
                 {allFeatures.map((feature) => (
                   <button
                     key={feature}
-                    onClick={() => {
-                      if (features.includes(feature)) {
-                        setFeatures(features.filter(f => f !== feature));
-                      } else {
-                        setFeatures([...features, feature]);
-                      }
-                    }}
+                    onClick={() => features.includes(feature) ? setFeatures(features.filter(f => f !== feature)) : setFeatures([...features, feature])}
                     className={`p-3 rounded-xl border transition-all cursor-hover text-left flex items-center gap-3 ${
-                      features.includes(feature)
-                        ? 'bg-white/10 border-cyan-500/50'
-                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                      features.includes(feature) ? 'bg-white/10 border-cyan-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
                       features.includes(feature) ? 'bg-cyan-500 border-cyan-500' : 'border-gray-500'
                     }`}>
-                      {features.includes(feature) && (
-                        <CheckCircle className="w-3 h-3 text-white" />
-                      )}
+                      {features.includes(feature) && <CheckCircle className="w-3 h-3 text-white" />}
                     </div>
                     <span className="text-sm text-white">{feature}</span>
                   </button>
@@ -218,26 +212,47 @@ export default function ProjectEstimator() {
             </motion.div>
           )}
 
-          {/* Estimate Result */}
+          {/* Estimate Result & Form */}
           {projectType && complexity && timeline && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="mt-8 p-6 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl border border-white/10"
             >
-              <div className="text-center">
+              <div className="text-center mb-8">
                 <p className="text-gray-400 mb-2">Estimated Project Cost</p>
                 <div className="text-4xl md:text-5xl font-bold gradient-text mb-2">
                   ${totalCost.toLocaleString()}
                 </div>
-                <p className="text-sm text-gray-500 mb-4">Estimated timeline: {estimatedWeeks()} weeks</p>
-                <button className="btn-glow cursor-hover">
-                  Get Detailed Quote
-                </button>
-                <p className="text-xs text-gray-500 mt-4">
-                  *This is a rough estimate. Final cost may vary based on detailed requirements.
-                </p>
+                <p className="text-sm text-gray-500">Estimated timeline: {estimatedWeeks()} weeks</p>
               </div>
+
+              {/* Formspree Form */}
+              <form onSubmit={handleFormSubmission} className="max-w-md mx-auto">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    id="email"
+                    type="email" 
+                    name="email"
+                    placeholder="Enter email to save quote"
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500 focus:bg-white/10 transition-colors"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <button 
+                    type="submit" 
+                    disabled={state.submitting}
+                    className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {state.submitting ? 'Sending...' : 'Send Quote'}
+                  </button>
+                </div>
+                {state.errors && <p className="text-red-400 text-sm mt-3 text-center">There was an error submitting the form.</p>}
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  *This is a rough estimate. We'll contact you for details.
+                </p>
+              </form>
             </motion.div>
           )}
         </motion.div>
