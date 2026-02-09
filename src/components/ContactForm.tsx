@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, CheckCircle, ArrowRight, User, Mail, MessageSquare, Briefcase, Clock } from 'lucide-react';
+import { Send, CheckCircle, ArrowRight, User, Mail, MessageSquare, Briefcase, Loader2 } from 'lucide-react';
 
 const steps = [
   { id: 1, title: 'Project Details', icon: Briefcase },
@@ -36,7 +35,13 @@ const timelines = [
   '6+ months',
 ];
 
-export default function ContactForm() {
+// 1. Define the props interface
+interface ContactFormProps {
+  formEndpoint: string;
+}
+
+// 2. Accept the prop in the component
+export default function ContactForm({ formEndpoint }: ContactFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     projectType: '',
@@ -47,19 +52,52 @@ export default function ContactForm() {
     company: '',
     message: '',
   });
+  
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNext = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
-      setIsSubmitted(true);
+      submitToFormspree();
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const submitToFormspree = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // 3. Use the dynamic prop here
+      const response = await fetch(formEndpoint, {
+        method: "POST",
+        body: JSON.stringify(formData),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        const data = await response.json();
+        if (Object.hasOwn(data, 'errors')) {
+          alert(data["errors"].map((error: any) => error["message"]).join(", "));
+        } else {
+          alert("Oops! There was a problem submitting your form");
+        }
+      }
+    } catch (error) {
+      alert("Error submitting form. Please check your internet connection.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -104,7 +142,7 @@ export default function ContactForm() {
               message: '',
             });
           }}
-          className="btn-secondary cursor-hover"
+          className="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all font-medium"
         >
           Send Another Message
         </button>
@@ -148,7 +186,7 @@ export default function ContactForm() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.3 }}
-          className="bento-card"
+          className="bg-white/5 backdrop-blur-lg border border-white/10 p-8 rounded-2xl"
         >
           {/* Step 1: Project Details */}
           {currentStep === 1 && (
@@ -162,7 +200,7 @@ export default function ContactForm() {
                     <button
                       key={type}
                       onClick={() => setFormData({ ...formData, projectType: type })}
-                      className={`p-3 rounded-lg border text-sm transition-all cursor-hover ${
+                      className={`p-3 rounded-lg border text-sm transition-all text-left ${
                         formData.projectType === type
                           ? 'bg-white/10 border-cyan-500/50 text-white'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
@@ -181,7 +219,7 @@ export default function ContactForm() {
                     <button
                       key={budget}
                       onClick={() => setFormData({ ...formData, budget })}
-                      className={`p-3 rounded-lg border text-sm transition-all cursor-hover ${
+                      className={`p-3 rounded-lg border text-sm transition-all ${
                         formData.budget === budget
                           ? 'bg-white/10 border-cyan-500/50 text-white'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
@@ -200,7 +238,7 @@ export default function ContactForm() {
                     <button
                       key={timeline}
                       onClick={() => setFormData({ ...formData, timeline })}
-                      className={`p-3 rounded-lg border text-sm transition-all cursor-hover ${
+                      className={`p-3 rounded-lg border text-sm transition-all ${
                         formData.timeline === timeline
                           ? 'bg-white/10 border-cyan-500/50 text-white'
                           : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'
@@ -295,25 +333,30 @@ export default function ContactForm() {
           <div className="flex justify-between mt-8 pt-6 border-t border-white/10">
             <button
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isSubmitting}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 currentStep === 1
                   ? 'text-gray-600 cursor-not-allowed'
-                  : 'text-white hover:bg-white/10 cursor-hover'
+                  : 'text-white hover:bg-white/10'
               }`}
             >
               Back
             </button>
             <button
               onClick={handleNext}
-              disabled={!isStepValid()}
+              disabled={!isStepValid() || isSubmitting}
               className={`px-8 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                isStepValid()
-                  ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:shadow-lg hover:shadow-cyan-500/25 cursor-hover'
+                isStepValid() && !isSubmitting
+                  ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white hover:shadow-lg hover:shadow-cyan-500/25'
                   : 'bg-white/10 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {currentStep === 3 ? (
+              {isSubmitting ? (
+                 <>
+                   <Loader2 className="w-4 h-4 animate-spin" />
+                   Sending...
+                 </>
+              ) : currentStep === 3 ? (
                 <>
                   <Send className="w-4 h-4" />
                   Send Message

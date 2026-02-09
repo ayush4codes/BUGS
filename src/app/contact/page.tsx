@@ -1,6 +1,5 @@
-
 import type { Metadata } from 'next';
-import ContactForm from '@/components/ContactForm';
+import ContactForm from '@/components/ContactForm'; // Ensure this path matches your project structure
 import { Mail, MessageCircle, MapPin, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -68,8 +67,8 @@ export default function ContactPage() {
             ))}
           </div>
 
-          {/* Contact Form */}
-          <ContactForm />
+          {/* Contact Form - WE PASS THE URL HERE */}
+          <ContactForm formEndpoint="https://formspree.io/f/mqepqlrg" />
         </div>
       </div>
     </div>
