@@ -1,10 +1,10 @@
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CustomCursor from '@/components/CustomCursor';
+import Script from 'next/script'; // Import the Script component
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,9 +31,13 @@ export default function RootLayout({
         <Navigation />
         <main>{children}</main>
         <Footer />
+
+        {/* Tidio Integration */}
+        <Script 
+          src="//code.tidio.co/imzxuuo6jogluvwl7tn32lkcvzo4qyrb.js" 
+          strategy="lazyOnload" 
+        />
       </body>
     </html>
   );
 }
-
-
