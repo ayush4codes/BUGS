@@ -1,12 +1,20 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
 import { 
   Brain, Cloud, Globe, Smartphone, Code, 
-  Shield, Database, Zap, Cpu, Layers,
-  Terminal, Lock, Search, TrendingUp
+  Shield, Zap, ArrowRight 
 } from 'lucide-react';
+
+// Add this type definition at the top to prevent TypeScript errors
+declare global {
+  interface Window {
+    tidioChatApi?: {
+      open: () => void;
+      show: () => void;
+    };
+  }
+}
 
 const services = [
   {
@@ -54,6 +62,16 @@ const services = [
 ];
 
 export default function Services() {
+  // Function to open Tidio Chat
+  const openChat = () => {
+    if (window.tidioChatApi) {
+      window.tidioChatApi.show(); // Ensure widget is visible if you hid it
+      window.tidioChatApi.open();
+    } else {
+      console.warn("Tidio Chat is still loading...");
+    }
+  };
+
   return (
     <section className="relative py-24 overflow-hidden">
       {/* Background */}
@@ -89,23 +107,20 @@ export default function Services() {
               transition={{ delay: index * 0.1 }}
               className="group cursor-hover"
             >
-              <div className="bento-card h-full service-glow">
+              <div className="bento-card h-full service-glow relative">
                 {/* Icon */}
                 <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${service.gradient} mb-6`}>
                   <service.icon className="w-6 h-6 text-white" />
                 </div>
 
-                {/* Title */}
                 <h3 className="text-xl font-bold text-white mb-3 group-hover:gradient-text transition-all">
                   {service.title}
                 </h3>
 
-                {/* Description */}
                 <p className="text-gray-400 mb-6 leading-relaxed">
                   {service.description}
                 </p>
 
-                {/* Features */}
                 <ul className="space-y-2">
                   {service.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2 text-sm text-gray-500">
@@ -115,10 +130,9 @@ export default function Services() {
                   ))}
                 </ul>
 
-                {/* Arrow indicator */}
                 <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="p-2 bg-white/5 rounded-lg">
-                    <Zap className="w-5 h-5 text-cyan-400" />
+                    <ArrowRight className="w-5 h-5 text-cyan-400" />
                   </div>
                 </div>
               </div>
@@ -126,7 +140,7 @@ export default function Services() {
           ))}
         </div>
 
-        {/* CTA */}
+        {/* CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -134,7 +148,10 @@ export default function Services() {
           className="text-center mt-16"
         >
           <p className="text-gray-400 mb-4">Need a custom solution?</p>
-          <button className="btn-glow cursor-hover">
+          <button 
+            onClick={openChat}
+            className="btn-glow cursor-hover px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-xl font-bold text-white hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+          >
             Discuss Your Project
           </button>
         </motion.div>
@@ -142,4 +159,3 @@ export default function Services() {
     </section>
   );
 }
-
