@@ -68,7 +68,7 @@ export default function ContactPage() {
           </div>
 
           {/* Contact Form - WE PASS THE URL HERE */}
-          <ContactForm formEndpoint="https://formspree.io/f/mqepqlrg" />
+          <ContactForm formEndpoint="https://formspree.io/f/xkovgrdg" />
         </div>
       </div>
     </div>
